@@ -5,7 +5,7 @@ DIAMONDS = chr(9830)
 SPADES = chr(9824)
 CLUBS = chr(9827)
 BACKSIDE = 'backside'
-
+   
 def main():
     money = 5000
     while True:
@@ -14,76 +14,74 @@ def main():
             print("Good thing you weren't playing with real money.")
             print("Thanks for playing")
             sys.exit()
-            
-    # Let the player enter their bet for this round:
+
+        # Let the player enter their bet for this round:
         print(f"Money: {money}")
         bet = getBet(money)
-        
+
         # Give the dealer and player two cards from the deck each:
         deck = getDeck()
         dealerHand = [deck.pop(), deck.pop()]
         playerHand = [deck.pop(), deck.pop()]
-        
-        # Handle players actions:
+
+        # Handle player's actions:
         print(f"Bet: {bet}")
         while True:
             displayHands(playerHand, dealerHand, False)
             print()
-            
-            # Check the player has bust:
+
+            # Check if the player has busted
             if getHandValue(playerHand) > 21:
                 break
-            
-            # Get the player's move either H, S OR D:
+
+            # Get the player's move
             move = getMove(playerHand, money - bet)
-            
-            # Handle the player actions:
-            if move == 'D':
-                # Player is doubling down, they can increase their bet:
-                additionalBet = getBet(min(bet, (money - bet)))
+
+            # Handle player actions
+            if move == 'H':
+                playerHand.append(deck.pop())
+                if getHandValue(playerHand) > 21:
+                    break  # Player busts; exit loop
+            elif move == 'S':
+                break  # Player stands; end turn
+            elif move == 'D':
+                additionalBet = getBet(min(bet, money - bet))
                 bet += additionalBet
-                print("Bet increased to {}.".format(bet))
-                print(f"Bet: {bet}")
-            
-            if getHandValue(playerHand) > 21:
-                # The player has busted
-                continue
-    
-    # Handle the dealer's actions:
+                print(f"Bet increased to {bet}.")
+                playerHand.append(deck.pop())
+                break
+
+        # Dealer's turn
         if getHandValue(playerHand) <= 21:
             while getHandValue(dealerHand) < 17:
-                # The dealer hits:
                 print("Dealer hits...")
                 dealerHand.append(deck.pop())
                 displayHands(playerHand, dealerHand, False)
-                
+
                 if getHandValue(dealerHand) > 21:
                     break
                 input("Press Enter to continue...")
-                
-                print("\n\n")
-                
-                # Show the final hands
-                displayHands(playerHand, dealerHand, True)
-                
-                playerValue = getHandValue(playerHand)
-                dealerValue = getHandValue(dealerHand)
-                # Handle whether the player won, lost or tied:
-                if dealerValue > 21:
-                    print("Dealer busts! you win ${}!".format(bet))
-                    money -= bet
-                elif (playerValue > 21) or (playerValue < dealerValue):
-                    print("You lost!")
-                    money -= bet
-                elif playerValue > dealerValue:
-                    print('You won ${}'.format(bet))
-                    money += bet
-                elif playerValue == dealerValue:
-                    print('It\'s a tie, the bet is returned to you..')
-                    
-                input("Press Enter to continue..")
-                print('\n\n')
-                
+
+        # Final results
+        displayHands(playerHand, dealerHand, True)
+        playerValue = getHandValue(playerHand)
+        dealerValue = getHandValue(dealerHand)
+
+        if dealerValue > 21:
+            print(f"Dealer busts! You win ${bet}!")
+            money += bet
+        elif playerValue > 21 or playerValue < dealerValue:
+            print("You lost!")
+            money -= bet
+        elif playerValue > dealerValue:
+            print(f"You win ${bet}!")
+            money += bet
+        else:
+            print("It's a tie! The bet is returned to you.")
+
+        input("Press Enter to continue...")
+        print('\n\n')
+
 def getBet(maxBet):
      """Ask the player how much they want to bet for ths round"""
      while True:
@@ -186,7 +184,8 @@ def getMove(playerHand, money):
             if move in ('H', 'S'):
                 return move
             if move == 'D' and '(D)ouble down' in moves:
-                return moves
+                return move
+
             
 if __name__ == '__main__':
     main()
